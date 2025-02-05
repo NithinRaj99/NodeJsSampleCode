@@ -1,7 +1,7 @@
 ## Working of the Node.js Site
 This Node.js project creates a simple web server using Express.js that serves an HTML form and logs user input to the console.
 
-How It Works
+## How It Works
 Serves the HTML Form
 
 The server serves index.html from the public folder when you visit http://localhost:5000/.
@@ -34,7 +34,7 @@ npm init -y
 npm install express pg body-parser cors dotenv
 
 ```
-code to run server
+## code to run server
 
 ```
 node server.js
