@@ -1,7 +1,8 @@
 require("dotenv").config();
 const express = require("express");
-const bodyParser = require("body-parser");
+const mysql = require("mysql2");
 const cors = require("cors");
+const bodyParser = require("body-parser");
 const path = require("path");
 
 const app = express();
@@ -11,17 +12,47 @@ const port = 5000;
 app.use(cors());
 app.use(bodyParser.json());
 
-// Serve static files (HTML, CSS, JS)
 app.use(express.static(path.join(__dirname, "public")));
 
-// API Route to Log Data Instead of Saving
+// MySQL Database Connection
+const db = mysql.createConnection({
+    host: process.env.DB_HOST || "localhost",
+    user: process.env.DB_USER || "root",
+    password: process.env.DB_PASSWORD || "",
+    database: process.env.DB_NAME || "your_database"
+});
+
+db.connect(err => {
+    if (err) {
+        console.error("Database connection failed:", err);
+        return;
+    }
+    console.log("Connected to MySQL Database");
+});
+
+// Insert Data into MySQL
 app.post("/submit", (req, res) => {
     const { name, email, age } = req.body;
 
-    // Log the data instead of saving it to the database
-    console.log("Received Data:", { name, email, age });
+    const query = "INSERT INTO users (name, email, age) VALUES (?, ?, ?)";
+    db.query(query, [name, email, age], (err, result) => {
+        if (err) {
+            console.error("Error inserting data:", err);
+            return res.status(500).json({ success: false, message: "Database error" });
+        }
+        res.json({ success: true, message: "Data saved successfully!" });
+    });
+});
 
-    res.json({ success: true, message: "Data logged successfully!" });
+// Fetch Data from MySQL
+app.get("/users", (req, res) => {
+    db.query("SELECT * FROM users", (err, results) => {
+        if (err) {
+            console.error("Error fetching data:", err);
+            return res.status(500).json({ success: false, message: "Database error" });
+        }
+        res.json(results);
+    });
 });
 
 // Start Server
